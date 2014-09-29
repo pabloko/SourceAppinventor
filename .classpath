@@ -2,17 +2,11 @@
 <classpath>
 	<classpathentry kind="src" path="aimerger/src"/>
 	<classpathentry kind="src" path="appengine/src"/>
-	<classpathentry kind="src" path="appengine/tests"/>
 	<classpathentry kind="src" path="blockseditor/src"/>
-	<classpathentry kind="src" path="blockseditor/tests"/>
 	<classpathentry kind="src" path="blockslib/src"/>
-	<classpathentry kind="src" path="blockslib/tests"/>
 	<classpathentry kind="src" path="buildserver/src"/>
-	<classpathentry kind="src" path="buildserver/tests"/>
 	<classpathentry kind="src" path="common/src"/>
-	<classpathentry kind="src" path="common/tests"/>
 	<classpathentry kind="src" path="components/src"/>
-	<classpathentry kind="src" path="components/tests"/>
 	<classpathentry kind="lib" path="buildserver/lib/activation-1.1.jar"/>
 	<classpathentry kind="lib" path="buildserver/lib/asm-3.1.jar"/>
 	<classpathentry kind="lib" path="buildserver/lib/FastInfoset-1.2.2.jar"/>
