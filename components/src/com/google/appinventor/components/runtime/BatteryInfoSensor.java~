@@ -1,0 +1,198 @@
+package com.google.appinventor.components.runtime;
+
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
+import android.os.Bundle;
+import android.util.Log;
+
+import com.google.appinventor.components.annotations.DesignerComponent;
+import com.google.appinventor.components.annotations.DesignerProperty;
+import com.google.appinventor.components.annotations.PropertyCategory;
+import com.google.appinventor.components.annotations.SimpleEvent;
+import com.google.appinventor.components.annotations.SimpleFunction;
+import com.google.appinventor.components.annotations.SimpleObject;
+import com.google.appinventor.components.annotations.SimpleProperty;
+import com.google.appinventor.components.annotations.UsesPermissions;
+import com.google.appinventor.components.common.ComponentCategory;
+import com.google.appinventor.components.common.YaVersion;
+import com.google.appinventor.components.runtime.util.ErrorMessages;
+
+import edu.mit.media.funf.probe.Probe;
+//import edu.mit.media.funf.probe.Probe.Parameter;
+import edu.mit.media.funf.probe.builtin.BatteryProbe;
+import edu.mit.media.funf.probe.builtin.ProbeKeys.BatteryKeys;
+
+/**
+ * BatteryInfoSensor provides information about remaining battery charge levels.
+ * 
+ * @author abhagi@mit.edu (Anshul Bhagi)
+ * @author fuming@mit.edy (Fuming Shih) //note the previous version of Funf v0.3 that Anshul used no longer worked, need to change
+ * 
+ */
+@DesignerComponent(version = YaVersion.BATTERY_INFO_SENSOR_VERSION, 
+        description = "A component to check the status of a phone's battery charge.", 
+         category = ComponentCategory.SENSORS, 
+         nonVisible = true, 
+         iconName = "images/battery.png")
+@SimpleObject
+@UsesPermissions(permissionNames = "android.permission.BATTERY_STATS, android.permission.WAKE_LOCK")
+public class BatteryInfoSensor extends AndroidNonvisibleComponent implements
+		SensorComponent {
+
+	static final String BATTERY_LEVEL_UPDATE_ACTION = "BATTERY_LEVEL_UPDATE_ACTION";
+	
+	private int batteryLevel = 0;
+	private boolean enabled;
+	private int period; // in seconds
+
+	public BatteryInfoSensor(ComponentContainer container) {
+		super(container.$form());
+
+		//Log.v("BatteryInfoSensor", "In init");
+		
+		IntentFilter intentFilter = new IntentFilter(BATTERY_LEVEL_UPDATE_ACTION);
+		BatteryInfoReceiver receiver = new BatteryInfoReceiver();
+
+		container.$context().registerReceiver(receiver, intentFilter);
+
+		//Log.v("BatteryInfoSensor", "registered broadcast receiver");
+
+		Intent callbackIntent = new Intent(BATTERY_LEVEL_UPDATE_ACTION);
+
+		// Restrict broadcast to only my package to prevent broadcasting private
+		// user data
+		callbackIntent.setPackage(container.$context().getPackageName());
+
+		//Log.v("BatteryInfoSensor", "random line 1");
+		
+		PendingIntent callback = PendingIntent.getBroadcast(
+				container.$context(), 0, callbackIntent,
+				PendingIntent.FLAG_UPDATE_CURRENT);
+
+		//Log.v("BatteryInfoSensor", "random line 2");
+		
+		try {
+			
+			Intent probeIntent = new Intent(container.$context(),
+					BatteryProbe.class);
+			
+			//Log.v("BatteryInfoSensor", "random line 2.1");
+			
+//			Bundle params = new Bundle();
+//			params.putLong(Parameter.Builtin.PERIOD.name, 10L); // Run every 10
+//														        // seconds
+//			
+//			Bundle[] paramsArray = new Bundle[]{params};
+//			
+//			//Log.v("BatteryInfoSensor", "random line 2.2");
+//
+//			probeIntent.setAction(Probe.ACTION_REQUEST);
+//			probeIntent.putExtra(Probe.CALLBACK_KEY, callback);
+//			probeIntent.putExtra(Probe.REQUESTS_KEY, paramsArray);
+				
+			//Log.v("BatteryInfoSensor", "random line 3");
+			
+			container.$context().startService(probeIntent);
+	
+			//Log.v("BatteryInfoSensor", "finished init");
+		}catch(Throwable t){
+			Log.v("BatteryInfoSensor", "exception caught", t);
+		}
+	}
+
+	/**
+	 * Indicates that the battery is low.
+	 */
+	@SimpleEvent
+	public void BatteryIsLow() {
+		EventDispatcher.dispatchEvent(this, "BatteryIsLow");
+	}
+
+	/**
+	 * Indicates that the battery info has been read.
+	 */
+	@SimpleEvent
+	public void BatteryInfoReceived(){
+		EventDispatcher.dispatchEvent(this, "BatteryInfoReceived");
+	}
+	
+	/**
+	 * Returns the current battery life as an integer between 0 and 100 (fully
+	 * charged).
+	 */
+	@SimpleProperty
+	public int BatteryLife() {
+		return this.batteryLevel;
+	}
+
+	/**
+	 * Indicates whether the user has specified that the sensor should listen
+	 * for changes and raise the corresponding events.
+	 */
+	@SimpleProperty(category = PropertyCategory.BEHAVIOR)
+	public boolean Enabled() {
+		return enabled;
+	}
+
+	/**
+	 * Indicates whether the sensor should listen for location chagnes and raise
+	 * the corresponding events.
+	 */
+	@DesignerProperty(editorType = DesignerProperty.PROPERTY_TYPE_BOOLEAN, defaultValue = "True")
+	@SimpleProperty
+	public void Enabled(boolean enabled) {
+		this.enabled = enabled;
+
+		// not yet implemented
+	}
+
+	/**
+	 * Indicates the amount of time between successive probe runs.
+	 */
+	@SimpleProperty(category = PropertyCategory.BEHAVIOR)
+	public int Period() {
+		return this.period;
+	}
+
+	/**
+	 * Change the period, the amount of time between successive probe runs.
+	 */
+	@DesignerProperty(editorType = DesignerProperty.PROPERTY_TYPE_STRING, defaultValue = "300")
+	@SimpleProperty
+	public void Period(String newPeriod) {
+		
+		Integer parsed;
+		try {
+			parsed = Integer.parseInt(newPeriod);
+			this.period = parsed;
+		} catch (Exception e){
+			
+		}
+	}
+
+	class BatteryInfoReceiver extends BroadcastReceiver {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			Bundle data = intent.getExtras();
+			Object obj = data.get(BatteryKeys.LEVEL);
+			
+			Log.v("BatteryInfoSensor", "received battery info message!!!");
+			
+			if (obj instanceof Integer){
+				batteryLevel = ((Integer) obj).intValue();
+			}
+
+			BatteryInfoReceived();
+			
+			if (batteryLevel < 10){
+				BatteryIsLow();
+			}
+		}
+		
+	}
+}

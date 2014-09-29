@@ -1,0 +1,26 @@
+<!DOCTYPE YACodeBlocks SYSTEM "support/save_format.dtd">
+<YACodeBlocks ya-version="79" lang-version="17">
+<Pages><Page page-name=" " page-color="237 245 211" page-width="1920" page-height="1600" page-drawer="My Definitions" >
+<PageBlocks>
+<Block id="699" genus-name="AdMobIntersitial-ShowIntersitialAd" has-focus="yes" >
+<Location><X>36</X><Y>57</Y></Location>
+<Label>AdMobIntersitial1.ShowIntersitialAd</Label>
+<BeforeBlockId>695</BeforeBlockId>
+</Block>
+<Block id="695" genus-name="Button-Click" >
+<Location><X>8</X><Y>24</Y></Location>
+<Label>Button1.Click</Label>
+<Sockets num-sockets="1" >
+<BlockConnector connector-kind="socket" connector-type="cmd" init-type="cmd" label="do" is-indented="yes" position-type="single" con-block-id="699" ></BlockConnector>
+</Sockets>
+</Block>
+</PageBlocks>
+</Page>
+
+</Pages><YoungAndroidMaps><YoungAndroidUuidMap>
+<YoungAndroidUuidEntry uuid="688309556" component-id="AdMobIntersitial1" component-genus="AdMobIntersitial" component-version="1" ></YoungAndroidUuidEntry>
+<YoungAndroidUuidEntry uuid="0" component-id="Screen1" component-genus="Form" component-version="0" ></YoungAndroidUuidEntry>
+<YoungAndroidUuidEntry uuid="1932746243" component-id="Button1" component-genus="Button" component-version="5" ></YoungAndroidUuidEntry>
+</YoungAndroidUuidMap>
+</YoungAndroidMaps>
+</YACodeBlocks>
